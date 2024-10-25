@@ -1,0 +1,66 @@
+﻿@model CourseProject.ViewModels.TemplatesView
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container-xxl">
+    <div class="rounded p-4 mb-4 bg-body-tertiary">
+        <h2 class="mb-4">Create a form</h2>
+        <div class="row align-items-center">
+            @foreach (var template in Model.Templates)
+            {
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 align-content-center mb-4">
+                    <button type="submit" class="card shadow p-5 card-form w-100 h-100 createTemplateForm" role="button" value="@template.Id">
+                        @if (template.Image != null)
+                        {
+                            <img src="@template.Image" class="card-img-top" alt="@template.Name">
+                        }
+                        else
+                        {
+                            <i class="bi bi-plus text-center w-100 mb-3" style="font-size: 4rem;"></i>
+                        }
+                        <div class="card-body text-center">
+                            <h5 class="card-title">@template.Name</h5>
+                        </div>
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h2>Recent Forms</h2>
+        </div>
+        <div>
+            <div class="dropdown">
+                <button class="btn btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Anyone is the owner
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Action</a></li>
+                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="row align-items-center" id="currentUserTemplates">
+        @foreach (var template in Model.CurrentUserTemplates)
+        {
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 align-content-center mb-4 mb-md-3">
+                <button type="submit" class="card shadow card-form w-100 h-100 viewUserTemplate" role="button" value="@template.Id">
+                    @if (template.Image != null)
+                    {
+                        <img src="@template.Image" class="card-img-top" alt="@template.Name">
+                    } else
+                    {
+                        <i class="bi bi-plus text-center w-100 mb-3" style="font-size: 4rem;"></i>
+                    }
+                    <div class="card-body text-center">
+                        <h5 class="card-title">@template.Name</h5>
+                    </div>
+                </button>
+            </div>
+        }
+    </div>
+</div>

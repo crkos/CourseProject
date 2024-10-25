@@ -1,0 +1,38 @@
+﻿@model CourseProject.ViewModels.SearchTemplatesVM
+@{
+    ViewData["Title"] = "Search";
+}
+
+<div class="container-xxl">
+    <div class="rounded p-4 mb-4 bg-body-tertiary">
+        <h2 class="mb-4">Found Templates</h2>
+        <div class="row align-items-center">
+            @if (Model.Templates != null && Model.Templates.Any())
+            {
+                @foreach (var template in Model.Templates)
+                {
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 align-content-center mb-4">
+                        <button type="submit" class="card shadow p-5 card-form w-100 h-100 createTemplateForm" role="button" value="@template.Id">
+                            @if (template.Image != null)
+                            {
+                                <img src="@template.Image" class="card-img-top" alt="@template.Name">
+                            }
+                            else
+                            {
+                                <i class="bi bi-plus text-center w-100 mb-3" style="font-size: 4rem;"></i>
+                            }
+                            <div class="card-body text-center">
+                                <h5 class="card-title">@template.Name</h5>
+                            </div>
+                        </button>
+                    </div>
+                }
+            } else
+            {
+                <div class="col-12">
+                    <p>No templates were found :(</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

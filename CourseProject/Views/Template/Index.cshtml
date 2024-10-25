@@ -1,0 +1,140 @@
+﻿@model CourseProject.ViewModels.IndividualTemplateView
+
+@{
+    ViewData["Title"] = Model.Template.Name;
+}
+
+<div class="container-xxl">
+    <form asp-action="Update" method="post" asp-controller="Template" enctype="multipart/form-data">
+        <input type="hidden" name="TemplateId" value="@Model.Template.Id" /> 
+
+        <div class="container-fluid bg-body-tertiary p-4 shadow rounded-3">
+            <div class="justify-content-between align-items-center mb-4">
+                <label for="exampleFormControlInput1" class="form-label">Title</label>
+                <input name="TemplateName" value="@Model.Template.Name" class="form-control w-auto border-0 text-capitalize text-uppercase fs-1" aria-label="@Model.Template.Name" />
+            </div>
+            <div class="input-group mb-3 w-50">
+                <input type="file" class="form-control" id="TemplateImage" name="TemplateImage">
+                <label class="input-group-text" for="inputGroupFile02">Image for Template</label>
+            </div>
+            <div>
+                <label for="my-text-area" class="form-label">Description</label>
+                <textarea name="TemplateDescription" id="my-text-area">@Model.Template.Description</textarea>
+            </div>
+        </div>
+
+        <section class="questionsContainer" id="simpleList">
+            @for (int i = 0; i < Model.Template.Questions.Count; i++)
+            {
+                var question = Model.Template.Questions.ToArray()[i];
+                <div class="container-fluid bg-body-tertiary p-4 shadow rounded-3 mt-4 question">
+                    <input type="hidden" name="Questions[@i].QuestionId" value="@question.Id" />
+                    <input type="hidden" name="Questions[@i].QuestionType" value="@question.QuestionType" />
+                    <div class="d-flex justify-content-center align-items-center">
+                        <i class="bi bi-grip-horizontal text-center fs-1 handle" role="button" title="Move element"></i>
+                    </div>
+                    <label for="Questions[@i].QuestionText" class="form-label">Question</label>
+                    <input name="Questions[@i].QuestionText" value="@question.QuestionText" class="form-control w-50 fs-2 mb-4" />
+                    <input placeholder="Short Answer" class="form-control w-50 border-0" disabled />
+                </div>
+            }
+        </section>
+
+        <section>
+            <div class="container-fluid bg-body-tertiary p-1 shadow rounded-3 mt-4 d-flex align-items-center justify-content-center addQuestion" data-bs-toggle="tooltip" data-bs-placement="top" role="button"
+                 data-bs-custom-class="custom-tooltip"
+                 data-bs-title="Add a new Question">
+                <i class="bi bi-plus-circle fs-1"></i>
+            </div>
+        </section>
+
+        <!-- Right-aligned submit button -->
+        <div class="mt-4 d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+
+    <section>
+        <h2>Comments</h2>
+        <div class="container-fluid bg-body-tertiary p-4 shadow rounded-3">
+            <div class="userComments">
+                @if (Model.Template.Comments.Any())
+                {
+                    @foreach (var comment in Model.Template.Comments)
+                    {
+                        <div class="comment-item mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>@comment.User.Name</strong>
+                                    <small class="text-muted">(@comment.CreatedDate.ToString("MMMM dd, yyyy"))</small>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <p>@comment.CommentText</p>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p>No comments yet. Be the first to comment!</p>
+                }
+            </div>
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="mt-4">
+                    <form asp-action="AddComment" asp-controller="Template" method="post" id="commentForm">
+                        <div class="form-group mb-2">
+                            <input type="hidden" id="templateId" name="templateId" value="@Model.Template.Id" />
+                            <label for="CommentText">Add a Comment</label>
+                            <textarea id="CommentText" name="CommentText" class="form-control" rows="3" placeholder="Write your comment here..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Comment</button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <p>Please <a href="/">log in</a> to post a comment.</p>
+            }
+        </div>
+    </section>
+    <link rel="stylesheet" href="~/lib/bitheral/easymde/dist/easymde.min.css">
+    <script src="~/lib/bitheral/easymde/dist/easymde.min.js"></script>
+    <script src="~/lib/sortable/sortable.min.js"></script>
+    <script src="~/js/signalr/dist/browser/signalr.js"></script>
+    <script>
+        var templateId = "@Model.Template.Id";
+        var el = document.getElementById('simpleList');
+        // Simple list
+        Sortable.create(el, {
+            animation: 150,
+            handle: '.handle'
+        });
+        const easyMDE = new EasyMDE({
+            element: document.getElementById('my-text-area'),
+            minHeight: "400px",
+            autosave: {
+                enabled: true,
+                uniqueId: templateId,
+                delay: 1000,
+                submit_delay: 5000,
+                timeFormat: {
+                    locale: 'en-US',
+                    format: {
+                        year: 'numeric',
+                        month: 'long',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    },
+                },
+                text: "Autosaved locally: "
+            },
+            uploadImage: true,
+            imageMaxSize: 1024 * 1024 * 5,
+            imageUploadEndpoint: "/Template/UploadImage",
+            imagePathAbsolute: true,
+        });
+    </script>
+</div>

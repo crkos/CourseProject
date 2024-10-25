@@ -1,0 +1,46 @@
+﻿@model CourseProject.ViewModels.IndividualTemplateView
+
+@{
+    ViewData["Title"] = Model.Template.Name;
+}
+
+<div class="container-xxl">
+    <form asp-action="Save" method="post" asp-controller="Form">
+        <input type="hidden" name="TemplateId" value="@Model.Template.Id" />  <!-- Hidden input for TemplateId -->
+
+        <div class="container-fluid bg-body-tertiary p-4 shadow rounded-3">
+            <div class="justify-content-between align-items-center mb-4">
+                <label for="exampleFormControlInput1" class="form-label">Title</label>
+                <input name="TemplateName" value="@Model.Template.Name" class="form-control w-auto border-0 text-capitalize text-uppercase fs-1" aria-label="@Model.Template.Name" disabled/>
+            </div>
+            <div>
+                <md-block untrusted>
+                    @Model.Template.Description
+                </md-block>
+            </div>
+        </div>
+
+        <section class="questionsContainer" id="simpleList">
+            @for (int i = 0; i < Model.Template.Questions.Count; i++)
+            {
+                var question = Model.Template.Questions.ToArray()[i];
+                <div class="container-fluid bg-body-tertiary p-4 shadow rounded-3 mt-4 question">
+                    <input type="hidden" name="Questions[@i].QuestionId" value="@question.Id" />
+                    <input type="hidden" name="Questions[@i].QuestionType" value="@question.QuestionType" />
+                    <label for="Questions[@i].QuestionText" class="form-label">Question</label>
+                    <input name="Questions[@i].QuestionText" value="@question.QuestionText" class="form-control w-50 fs-2 mb-4" disabled/>
+                    <input placeholder="Short Answer" class="form-control w-50 border-0" name="Questions[@i].QuestionResponse"/>
+                </div>
+            }
+        </section>
+
+        <!-- Right-aligned submit button -->
+        <div class="mt-4 d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
+    <script>
+        var templateId = "@Model.Template.Id";
+    </script>
+</div>
