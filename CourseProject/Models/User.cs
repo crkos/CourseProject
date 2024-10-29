@@ -6,6 +6,7 @@ namespace CourseProject.Models
     {
         public string Name { get; set; }
         public string LastName { get; set; }
+        public string Status { get; set; }
         public DateTime LastLogin { get; set; }
 
         public virtual ICollection<Form> Forms { get; set; }

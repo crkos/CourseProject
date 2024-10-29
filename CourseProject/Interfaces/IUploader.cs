@@ -3,6 +3,6 @@
     public interface IUploader
     {
         Uri UploadFile(Stream fileStream, string? fileName);
-        string TransformImage(Uri imageUrl);
+        string TransformImage(Uri imageUrl, int width, int height);
     }
 }

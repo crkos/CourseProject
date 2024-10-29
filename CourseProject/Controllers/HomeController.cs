@@ -46,7 +46,7 @@ namespace CourseProject.Controllers
 
                 if (template.Image != null)
                 {
-                    template.Image = new Uri(_fileUploadService.TransformImage(template.Image));
+                    template.Image = new Uri(_fileUploadService.TransformImage(template.Image, 250, 350));
                 }
             }
 
@@ -54,7 +54,7 @@ namespace CourseProject.Controllers
             {
                 if (template.Image != null)
                 {
-                    template.Image = new Uri(_fileUploadService.TransformImage(template.Image));
+                    template.Image = new Uri(_fileUploadService.TransformImage(template.Image, 250, 350));
                 }
             }
 

@@ -19,7 +19,13 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<AppDBContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SQLSTRING"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SQLREMOTESTRING"));
+});
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login"; // Ensure this path is correct
+    options.AccessDeniedPath = "/Account/Login"; // Optional: define a specific access denied path
 });
 
 builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
@@ -34,10 +40,12 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 .AddEntityFrameworkStores<AppDBContext>()
 .AddDefaultTokenProviders();
 
+
 // Services
 builder.Services
     .AddScoped<ITemplateService, TemplateService>()
     .AddScoped<IFormService, FormService>()
+    .AddScoped<IAuthorizationService, AuthorizationService>()
     .AddTransient<IUploader, CloudinaryUploader>()
     .AddTransient<FileUploadService>()
     .AddTransient<ISearch<Template>, TemplateSearch>()
@@ -57,10 +65,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
 app.UseCors(options =>
 {
     options.AllowAnyMethod();
 });
+
+await app.InitializeRolesAsync();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -71,6 +82,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHub<CommentsHub>("/commentsHub");
+
 
 app.MapControllerRoute(
     name: "default",

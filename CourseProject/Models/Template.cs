@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using CourseProject.CustomAtributes;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CourseProject.Models
 {
@@ -14,6 +15,7 @@ namespace CourseProject.Models
         public DateTime CreatedDate { get; set; }
 
         [ForeignKey("CreatedBy")]
+        [OwnerId]
         public virtual User User { get; set; }
 
         [ForeignKey("TopicId")]

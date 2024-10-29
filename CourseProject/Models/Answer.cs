@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CourseProject.CustomAtributes;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CourseProject.Models
@@ -17,6 +18,7 @@ namespace CourseProject.Models
 
         [ForeignKey("SubmittedBy")]
         [DeleteBehavior(DeleteBehavior.NoAction)]
+        [OwnerId]
         public virtual User User { get; set; }
 
         public virtual ICollection<Comment> Comments { get; set; }

@@ -50,6 +50,7 @@ namespace CourseProject.Controllers
                 LastName = model.LastName,
                 Email = model.Email,
                 NormalizedEmail = model.Email,
+                Status = "Active",
                 PhoneNumber = "6121112016"
             };
 
@@ -95,6 +96,12 @@ namespace CourseProject.Controllers
             if (user == null)
             {
                 ViewData["Message"] = "The email/password is incorrect";
+                return View();
+            }
+
+            if (user.Status == "Blocked")
+            {
+                ViewData["Message"] = "This user is currently blocked, contact an administrator to unblock you.";
                 return View();
             }
 

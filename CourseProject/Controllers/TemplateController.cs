@@ -20,13 +20,16 @@ namespace CourseProject.Controllers
         private readonly UserManager<User> _userManager;
         private readonly FileUploadService _fileUploadService;
         private readonly IHubContext<CommentsHub> _hubContext;
+        private readonly AuthorizationService _authorizationService;
 
-        public TemplateController(AppDBContext dbContext, ITemplateService templateService, UserManager<User> userManager, FileUploadService fileUploadService, IHubContext<CommentsHub> hubContext) {
+        public TemplateController(AppDBContext dbContext, ITemplateService templateService, UserManager<User> userManager, FileUploadService fileUploadService, IHubContext<CommentsHub> hubContext, AuthorizationService authorizationService = null)
+        {
             _dbContext = dbContext;
             _templateService = templateService;
             _userManager = userManager;
             _fileUploadService = fileUploadService;
             _hubContext = hubContext;
+            _authorizationService = authorizationService;
         }
 
         [HttpGet("{id}/edit")]
@@ -34,10 +37,11 @@ namespace CourseProject.Controllers
         public async Task<IActionResult> Index(int id)
         {
             var template = _dbContext.Templates
-                .Include(t => t.Questions)
+                .Include(t => t.Questions.OrderBy(q => q.Order))
+                    .ThenInclude(t => t.Answers)
                 .Include(t => t.Comments)
                     .ThenInclude(c => c.User)
-                .OrderByDescending(t => t.Questions.Max(q => q.Order))
+                .Include(t => t.Forms)
                 .FirstOrDefault(t => t.Id == id);
 
             if (template == null)
@@ -45,31 +49,41 @@ namespace CourseProject.Controllers
                 return NotFound("Template not found");
             }
 
-            var user = await _userManager.GetUserAsync(User);
-            var liked = await _templateService.HasUserLikedTemplate(user, template);
 
-            if (template.CreatedBy != user.Id)
+            if (!await _authorizationService.CanEditResource(template))
             {
-                return RedirectToAction("view", new { id = id });
+                return Unauthorized();
             }
 
-            return View(new IndividualTemplateView
+            var user = await _userManager.GetUserAsync(User);
+            var liked = await _templateService.HasUserLikedTemplate(user, template);
+            var answerChartData = template.Questions.Select(q => new AnswerChartData
+            {
+                QuestionText = q.QuestionText,
+                AnswerCounts = q.Answers
+            .GroupBy(a => a.AnswerText)
+            .ToDictionary(g => g.Key, g => g.Count())
+            }).ToList();
+
+            return View(new EditTemplateVM
             {
                 Template = template,
-                Liked = liked
+                Liked = liked,
+                AnswerCharData = answerChartData
             });
         }
 
         [HttpGet("{id}/view")]
         public async Task<IActionResult> View(int id)
         {
+            // Maybe i can do something on the service?
             var template = _dbContext.Templates
                 .Include(t => t.Likes)
-                .Include(t => t.Questions)
+                .Include(t => t.Questions.OrderBy(q => q.Order))
                 .Include(t => t.Comments)
                     .ThenInclude(c => c.User)
-                .OrderByDescending(t => t.Questions.Max(q => q.Order))
                 .FirstOrDefault(t => t.Id == id);
+
             var user = await _userManager.GetUserAsync(User);
             var alreadyLiked = await _templateService.HasUserLikedTemplate(user, template);
 
@@ -124,7 +138,6 @@ namespace CourseProject.Controllers
                                                       .FirstOrDefault(t => t.Id == templateId);
             var user = await _userManager.GetUserAsync(User);
 
-            // Clone the template (create a new Template object)
             var newTemplate = new Template
             {
                 Name = "New Form",
@@ -136,7 +149,6 @@ namespace CourseProject.Controllers
                 Tags = defaultTemplate.Tags
             };
 
-            // Clone each question and assign it to the new template
             foreach (var question in defaultTemplate.Questions)
             {
                 var newQuestion = new Question
@@ -149,7 +161,6 @@ namespace CourseProject.Controllers
                 newTemplate.Questions.Add(newQuestion);
             }
 
-            // Add the new template (and related questions) to the database
             await _templateService.Create(newTemplate);
 
             return Ok(Json(new
@@ -163,9 +174,46 @@ namespace CourseProject.Controllers
         [HttpPost]
         public async Task<IActionResult> Update([FromForm] TemplateVM model)
         {
+            if (!await _authorizationService.CanEditResource(await _templateService.GetTemplateAsync(model.TemplateId)))
+            {
+                return Unauthorized();
+            }
+
             await _templateService.Update(model);
 
             return RedirectToAction("Index", new { id = model.TemplateId });
+        }
+
+        [Authorize]
+        [HttpPatch("order")]
+        public async Task<IActionResult> Order([FromBody] OrderVM model)
+        {
+            var questionToMove = await _dbContext.Question.FirstOrDefaultAsync(t => t.Id == model.QuestionId);
+
+            if (questionToMove == null)
+            {
+                return NotFound("Question not found");
+            }
+
+            if (await _authorizationService.CanEditResource(questionToMove))
+            {
+                return Unauthorized();
+            }
+
+            var questionAtNewOrder = await _dbContext.Question
+                .FirstOrDefaultAsync(q => q.Order == model.NewOrder && q.TemplateId == model.TemplateId);
+
+            if (questionAtNewOrder == null)
+            {
+                return NotFound("No question found with the specified new order");
+            }
+
+            questionAtNewOrder.Order = model.OldOrder;
+            questionToMove.Order = model.NewOrder;
+
+            await _dbContext.SaveChangesAsync();
+
+            return Ok("Order updated successfully");
         }
 
         [Authorize]
@@ -179,7 +227,12 @@ namespace CourseProject.Controllers
                 return NotFound("Template not found.");
             }
 
-            var maxOrder = await GetMaxOrderForTemplate(templateId);
+            if (await _authorizationService.CanEditResource(template))
+            {
+                return Unauthorized();
+            }
+
+            var maxOrder = await _templateService.GetMaxOrder(templateId);
 
             var newQuestion = new Question
             {
@@ -209,7 +262,6 @@ namespace CourseProject.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
-            // Create and save the comment
             var comment = new Comment
             {
                 CommentText = model.CommentText,
@@ -217,10 +269,26 @@ namespace CourseProject.Controllers
                 CommentedBy = user.Id,
                 CreatedDate = DateTime.Now
             };
+
             await _dbContext.AddAsync(comment);
             await _dbContext.SaveChangesAsync();
 
             await _hubContext.Clients.All.SendAsync("ReceiveComment", model.TemplateId, comment.CommentText, user.UserName, comment.CreatedDate.ToString("MMMM dd, yyyy"));
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int templateId)
+        {
+            if (await _authorizationService.CanEditResource(await _templateService.GetTemplateAsync(templateId)))
+            {
+                return Unauthorized();
+            }
+
+
+            await _templateService.Delete(templateId);
 
             return Ok();
         }
@@ -241,15 +309,5 @@ namespace CourseProject.Controllers
                 }
             });
         }
-
-        private async Task<int> GetMaxOrderForTemplate(int templateId)
-        {
-            var maxOrder = await _dbContext.Question
-                .Where(q => q.TemplateId == templateId)
-                .MaxAsync(q => (int?)q.Order) ?? 0; 
-
-            return maxOrder;
-        }
-
     }
 }

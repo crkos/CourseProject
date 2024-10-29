@@ -1,58 +1,191 @@
-﻿@model CourseProject.ViewModels.IndividualTemplateView
+﻿@model CourseProject.ViewModels.EditTemplateVM
 
 @{
     ViewData["Title"] = Model.Template.Name;
 }
 
 <div class="container-xxl">
-    <form asp-action="Update" method="post" asp-controller="Template" enctype="multipart/form-data">
-        <input type="hidden" name="TemplateId" value="@Model.Template.Id" /> 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        <div class="container-fluid bg-body-tertiary p-4 shadow rounded-3">
-            <div class="justify-content-between align-items-center mb-4">
-                <label for="exampleFormControlInput1" class="form-label">Title</label>
-                <input name="TemplateName" value="@Model.Template.Name" class="form-control w-auto border-0 text-capitalize text-uppercase fs-1" aria-label="@Model.Template.Name" />
-            </div>
-            <div class="input-group mb-3 w-50">
-                <input type="file" class="form-control" id="TemplateImage" name="TemplateImage">
-                <label class="input-group-text" for="inputGroupFile02">Image for Template</label>
-            </div>
-            <div>
+    <!-- Tabs for Questions, Answers, Settings -->
+    <div class="d-flex align-items-center justify-content-center mb-4">
+        <div>
+            <button id="questionsTabBtn" class="btn btn-outline-secondary me-2 active" type="button" onclick="showQuestionsTab()">Questions</button>
+            <button id="answersTabBtn" class="btn btn-outline-secondary me-2" type="button" onclick="showAnswersTab()">
+                Answers
+                <span class="badge text-bg-secondary">@Model.Template.Forms.Count()</span>
+            </button>
+            <button id="settingsTabBtn" class="btn btn-outline-secondary me-2" type="button" onclick="showSettingsTab()">Settings</button>
+            <button id="settingsTabBtn" class="btn btn-outline-secondary" type="button" onclick="copyFillFormToClipboard()">Copy link to fill form</button>
+        </div>
+    </div>
+
+    <!-- Questions Tab Section -->
+    <section id="questionsTab">
+        <form asp-action="Update" method="post" asp-controller="Template" enctype="multipart/form-data">
+            <input type="hidden" name="TemplateId" value="@Model.Template.Id" /> 
+
+            <div class="container-fluid bg-body-tertiary p-4 shadow rounded-3">
+                <label class="form-label">Title</label>
+                <input name="TemplateName" value="@Model.Template.Name" class="form-control border-0 text-uppercase fs-1" aria-label="@Model.Template.Name" />
+
+                <div class="input-group mb-3 mt-3">
+                    <input type="file" class="form-control" id="TemplateImage" name="TemplateImage">
+                    <label class="input-group-text" for="inputGroupFile02">Image for Template</label>
+                </div>
+
                 <label for="my-text-area" class="form-label">Description</label>
                 <textarea name="TemplateDescription" id="my-text-area">@Model.Template.Description</textarea>
             </div>
-        </div>
 
-        <section class="questionsContainer" id="simpleList">
-            @for (int i = 0; i < Model.Template.Questions.Count; i++)
-            {
-                var question = Model.Template.Questions.ToArray()[i];
-                <div class="container-fluid bg-body-tertiary p-4 shadow rounded-3 mt-4 question">
-                    <input type="hidden" name="Questions[@i].QuestionId" value="@question.Id" />
-                    <input type="hidden" name="Questions[@i].QuestionType" value="@question.QuestionType" />
-                    <div class="d-flex justify-content-center align-items-center">
-                        <i class="bi bi-grip-horizontal text-center fs-1 handle" role="button" title="Move element"></i>
+            <!-- Questions -->
+            <section class="questionsContainer" id="simpleList">
+                @for (int i = 0; i < Model.Template.Questions.Count; i++)
+                {
+                    var question = Model.Template.Questions.ToArray()[i];
+                   
+                    <div class="container-fluid bg-body-tertiary p-4 shadow rounded-3 mt-4 question">
+                        <input type="hidden" name="Questions[@i].QuestionId" value="@question.Id" />
+                        <div class="d-flex justify-content-center align-items-center">
+                            <i class="bi bi-grip-horizontal text-center fs-1 handle" role="button" title="Move element"></i>
+                        </div>
+                        <div class="d-flex flex-wrap align-items-center justify-content-between">
+                            <div>
+                                <label class="form-label">Question</label>
+                                <input name="Questions[@i].QuestionText" value="@question.QuestionText" class="form-control fs-2 mb-4" />
+                            </div>
+                            <div>
+                                <select class="form-select question-type mb-4 mb-sm-0" aria-label="Select Question Type" name="Questions[@i].QuestionType" data-question-index="@i">
+                                    @if (question.QuestionType == "TEXT")
+                                    {
+                                        <option value="TEXT" selected>Short Answer</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="TEXT">Short Answer</option>
+                                    }
+
+                                    @if (question.QuestionType == "MULTIPLE_TEXT")
+                                    {
+                                        <option value="MULTIPLE_TEXT" selected>Paragraph</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="MULTIPLE_TEXT">Paragraph</option>
+                                    }
+
+                                    @if (question.QuestionType == "INTEGER")
+                                    {
+                                        <option value="INTEGER" selected>Integer</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="INTEGER">Integer</option>
+                                    }
+
+                                    @if (question.QuestionType == "CHECKBOX")
+                                    {
+                                        <option value="CHECKBOX" selected>Multiple Options</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="CHECKBOX">Multiple Options</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-check form-switch">
+                                @if (question.IsVisible)
+                                {
+                                    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" name="Questions[@i].IsVisible" checked>
+                                } else
+                                {
+                                    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" name="Questions[@i].IsVisible">
+                                }
+                                <label class="form-check-label" for="flexSwitchCheckChecked">Show Question</label>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Input for Question Answer based on QuestionType -->
+                        <div id="answerInputContainer-@i">
+                            <!-- Default input (e.g., Short Answer) -->
+                            <input class="form-control border-0" disabled value="Short Answer" />
+
+                            <!-- Options container for CHECKBOX type (hidden by default) -->
+                            <div class="options-container d-none" data-options-index="@i">
+                                @for (int j = 0; j < 4; j++)
+                                {
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">Option @j</span>
+                                        <input type="text" name="Questions[@i].Options[@j]" class="form-control" placeholder="Enter option text" />
+                                    </div>
+                                }
+                            </div>
+                        </div>
                     </div>
-                    <label for="Questions[@i].QuestionText" class="form-label">Question</label>
-                    <input name="Questions[@i].QuestionText" value="@question.QuestionText" class="form-control w-50 fs-2 mb-4" />
-                    <input placeholder="Short Answer" class="form-control w-50 border-0" disabled />
+                }
+            </section>
+
+            <!-- Add Question Button -->
+            <section>
+                <div class="container-fluid bg-body-tertiary p-1 shadow rounded-3 mt-4 d-flex align-items-center justify-content-center addQuestion" role="button" title="Add a new Question">
+                    <i class="bi bi-plus-circle fs-1"></i>
                 </div>
-            }
-        </section>
+            </section>
 
-        <section>
-            <div class="container-fluid bg-body-tertiary p-1 shadow rounded-3 mt-4 d-flex align-items-center justify-content-center addQuestion" data-bs-toggle="tooltip" data-bs-placement="top" role="button"
-                 data-bs-custom-class="custom-tooltip"
-                 data-bs-title="Add a new Question">
-                <i class="bi bi-plus-circle fs-1"></i>
+            <!-- Submit Button -->
+            <div class="mt-4 d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">Submit</button>
             </div>
-        </section>
+        </form>
+    </section>
 
-        <!-- Right-aligned submit button -->
-        <div class="mt-4 d-flex justify-content-end">
-            <button type="submit" class="btn btn-primary">Submit</button>
+    <section id="answersTab" class="d-none">
+        <div class="d-flex align-items-center justify-content-center">
+            <div id="charts">
+                @foreach (var chartData in Model.AnswerCharData)
+                {
+                    var chartId = Guid.NewGuid().ToString("N");
+                    <div class="chart-container">
+                        <h3>@chartData.QuestionText</h3>
+                        <canvas id="@($"chart-{chartId}")"></canvas>
+                    </div>
+
+                    <script>
+                        const ctx_@chartId = document.getElementById('chart-@chartId');
+
+                        new Chart(ctx_@chartId, {
+                            type: 'pie',
+                            data: {
+                                labels: @Html.Raw(Json.Serialize(chartData.AnswerCounts.Keys.ToList())),
+                                datasets: [{
+                                    label: 'Answer Distribution',
+                                    data: @Html.Raw(Json.Serialize(chartData.AnswerCounts.Values.ToList())),
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Answers Distribution'
+                                    }
+                                },
+                            },
+                        });
+                    </script>
+                }
+            </div>
         </div>
-    </form>
+    </section>
+
+
+    <section id="settingsTab" class="d-none">
+        <p>HELLO SETTINGS</p>
+    </section>
 
     <section>
         <h2>Comments</h2>
@@ -89,7 +222,7 @@
                             <label for="CommentText">Add a Comment</label>
                             <textarea id="CommentText" name="CommentText" class="form-control" rows="3" placeholder="Write your comment here..." required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Comment</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
                 </div>
             }
@@ -99,42 +232,47 @@
             }
         </div>
     </section>
+
     <link rel="stylesheet" href="~/lib/bitheral/easymde/dist/easymde.min.css">
     <script src="~/lib/bitheral/easymde/dist/easymde.min.js"></script>
     <script src="~/lib/sortable/sortable.min.js"></script>
     <script src="~/js/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js//SimpleMDE.js"></script>
+    <script src="~/js/TemplateTabSelection.js"></script>
+    <script src="~/js/SortableScript.js"></script>
+
+    <!-- JavaScript to Handle Question Type Change -->
     <script>
-        var templateId = "@Model.Template.Id";
-        var el = document.getElementById('simpleList');
-        // Simple list
-        Sortable.create(el, {
-            animation: 150,
-            handle: '.handle'
-        });
-        const easyMDE = new EasyMDE({
-            element: document.getElementById('my-text-area'),
-            minHeight: "400px",
-            autosave: {
-                enabled: true,
-                uniqueId: templateId,
-                delay: 1000,
-                submit_delay: 5000,
-                timeFormat: {
-                    locale: 'en-US',
-                    format: {
-                        year: 'numeric',
-                        month: 'long',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                    },
-                },
-                text: "Autosaved locally: "
-            },
-            uploadImage: true,
-            imageMaxSize: 1024 * 1024 * 5,
-            imageUploadEndpoint: "/Template/UploadImage",
-            imagePathAbsolute: true,
+        // Event listener to change the input fields based on QuestionType
+        document.querySelectorAll('.question-type').forEach((select) => {
+            select.addEventListener('change', function () {
+                const questionIndex = this.getAttribute('data-question-index');
+                const answerInputContainer = document.getElementById(`answerInputContainer-${questionIndex}`);
+                const optionsContainer = answerInputContainer.querySelector('.options-container');
+
+                if (this.value === 'CHECKBOX') {
+                    // Show options fields
+                    optionsContainer.classList.remove('d-none');
+                    answerInputContainer.querySelector('input').classList.add('d-none');
+                } else {
+                    // Hide options fields and show a simple disabled input
+                    optionsContainer.classList.add('d-none');
+                    let placeholderText = '';
+                    switch (this.value) {
+                        case 'TEXT':
+                            placeholderText = 'Short Answer';
+                            break;
+                        case 'MULTIPLE_TEXT':
+                            placeholderText = 'Paragraph';
+                            break;
+                        case 'INTEGER':
+                            placeholderText = 'Enter an integer';
+                            break;
+                    }
+                    answerInputContainer.querySelector('input').value = placeholderText;
+                    answerInputContainer.querySelector('input').classList.remove('d-none');
+                }
+            });
         });
     </script>
 </div>

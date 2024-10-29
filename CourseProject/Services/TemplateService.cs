@@ -54,11 +54,34 @@ namespace CourseProject.Services
                     }
                     question.QuestionText = questionModel.QuestionText;
                     question.QuestionType = questionModel.QuestionType;
+                    if (questionModel.IsVisible == "on")
+                    {
+                        question.IsVisible = true;
+                    } else
+                    {
+                        question.IsVisible = false;
+                    }
                 }
             }
 
             await _dbContext.SaveChangesAsync();
         }
+
+        public async Task Delete(int templateId)
+        {
+            var template = await _dbContext.Templates
+                .FirstOrDefaultAsync(t => t.Id == templateId);
+
+            if (template == null)
+            {
+                throw new Exception("Template not found.");
+            }
+
+            _dbContext.Templates.Remove(template);
+
+            await _dbContext.SaveChangesAsync();
+        }
+
 
         public async Task<Template?> GetTemplateAsync(int id)
         {
@@ -100,6 +123,15 @@ namespace CourseProject.Services
                 _dbContext.Likes.Remove(existingLike);
                 await _dbContext.SaveChangesAsync();
             }
+        }
+
+        public async Task<int> GetMaxOrder(int templateId)
+        {
+            var maxOrder = await _dbContext.Question
+                .Where(q => q.TemplateId == templateId)
+                .MaxAsync(q => (int?)q.Order) ?? 0;
+
+            return maxOrder;
         }
     }
 }

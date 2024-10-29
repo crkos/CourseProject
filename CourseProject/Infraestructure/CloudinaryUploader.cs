@@ -32,10 +32,10 @@ namespace CourseProject.Infraestructure
             return uploadResult.SecureUrl;
         }
 
-        public string TransformImage(Uri imageUrl)
+        public string TransformImage(Uri imageUrl, int width = 250, int height = 350)
         {
             return _cloudinary.Api.UrlImgUp.Transform(
-                new Transformation().Width(250).Height(350).Crop("fill"))
+                new Transformation().Width(width).Height(height).Crop("fill"))
                 .BuildUrl(imageUrl.ToString().Split("/").Last());
         }
     }

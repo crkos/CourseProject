@@ -2,7 +2,6 @@
 using CourseProject.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Identity.Client;
 
 namespace CourseProject.Data
 {
@@ -38,6 +37,7 @@ namespace CourseProject.Data
                 tb.Property(col => col.Name).HasMaxLength(150);
                 tb.Property(col => col.Email).HasMaxLength(150);
                 tb.HasIndex(col => col.Email).IsUnique();
+                tb.Property(col => col.Status);
                 tb.Property(col => col.LastLogin);
             });
 
@@ -146,7 +146,7 @@ namespace CourseProject.Data
             modelBuilder.Entity<Like>().ToTable("Likes");
 
             modelBuilder.Entity<User>().HasData(
-                new User { Id = 1, Name = "Admin", UserName = "Admin", Email = "admin@app.com", NormalizedEmail = "ADMIN@APP.COM", PhoneNumber = "6121112016", NormalizedUserName = "ADMIN", LastName = "ADMIN", PasswordHash = "AQAAAAIAAYagAAAAEPZnSUh3qOA7/y+hlHyh8MVZuY3FHKgDKsWWhU40GI9K6ecLaIMv5ZaGX14SxcqrFA==", SecurityStamp = "7RBRNCP4BAJFPO76ZJGICDH4RYVJ24I6", ConcurrencyStamp = "3775d934-d3f1-415e-a930-14445a1b1ef6" }
+                new User { Id = 1, Name = "First", Status = "Active", UserName = "First", Email = "first@app.com", NormalizedEmail = "FIRST@APP.COM", PhoneNumber = "6121112016", NormalizedUserName = "FIRSTADMIN", LastName = "FIRSTADMIN", PasswordHash = "AQAAAAIAAYagAAAAEPZnSUh3qOA7/y+hlHyh8MVZuY3FHKgDKsWWhU40GI9K6ecLaIMv5ZaGX14SxcqrFA==", SecurityStamp = "7RBRNCP4BAJFPO76ZJGICDH4RYVJ24I6", ConcurrencyStamp = "3775d934-d3f1-415e-a930-14445a1b1ef6" }
                 );
 
             modelBuilder.Entity<Topic>().HasData(

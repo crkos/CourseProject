@@ -16,9 +16,9 @@ namespace CourseProject.Services
             return _uploader.UploadFile(fileStream, fileName);
         }
 
-        public string TransformImage(Uri imageUrl)
+        public string TransformImage(Uri imageUrl, int width, int height)
         {
-            return _uploader.TransformImage(imageUrl);
+            return _uploader.TransformImage(imageUrl, width, height);
         }
     }
 }

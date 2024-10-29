@@ -4,6 +4,7 @@
 }
 
 <div class="container-xxl">
+    <!-- Create a form section -->
     <div class="rounded p-4 mb-4 bg-body-tertiary">
         <h2 class="mb-4">Create a form</h2>
         <div class="row align-items-center">
@@ -27,32 +28,28 @@
             }
         </div>
     </div>
+
+    <!-- Recent Forms section -->
     <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2>Recent Forms (Owned)</h2>
+        <!-- Toggle buttons for Grid and Table view -->
         <div>
-            <h2>Recent Forms</h2>
-        </div>
-        <div>
-            <div class="dropdown">
-                <button class="btn btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Anyone is the owner
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Action</a></li>
-                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                </ul>
-            </div>
+            <button id="recentTableViewBtn" class="btn btn-outline-primary" onclick="showRecentTableView()">Table View</button>
+            <button id="recentGridViewBtn" class="btn btn-outline-secondary me-2" onclick="showRecentGridView()">Grid View</button>
         </div>
     </div>
-    <div class="row align-items-center" id="currentUserTemplates">
+
+    <!-- Grid View for Recent Forms (default) -->
+    <div id="recentGridView" class="row align-items-center d-none">
         @foreach (var template in Model.CurrentUserTemplates)
         {
-            <div class="col-12 col-sm-6 col-md-4 col-lg-3 align-content-center mb-4 mb-md-3">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 align-content-center mb-4">
                 <button type="submit" class="card shadow card-form w-100 h-100 viewUserTemplate" role="button" value="@template.Id">
                     @if (template.Image != null)
                     {
                         <img src="@template.Image" class="card-img-top" alt="@template.Name">
-                    } else
+                    }
+                    else
                     {
                         <i class="bi bi-plus text-center w-100 mb-3" style="font-size: 4rem;"></i>
                     }
@@ -63,4 +60,80 @@
             </div>
         }
     </div>
+
+    <!-- Table View for Recent Forms -->
+    <div id="recentTableView" class="">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Form Name</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var template in Model.CurrentUserTemplates)
+                {
+                    <tr>
+                        <td>@template.Name</td>
+                        <td class="d-flex">
+                            <button class="btn btn-primary" onclick="viewTemplate(@template.Id)">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-warning ms-1" onclick="editTemplate(@template.Id)">
+                                
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <!-- 
+                            <button class="btn btn-success ms-1" onclick="fillTemplate(@template.Id)">
+                                Fill Form
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            -->
+                            <button class="btn btn-danger ms-1" onclick="deleteTemplate(@template.Id)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function showRecentGridView() {
+            document.getElementById('recentGridView').classList.remove('d-none');
+            document.getElementById('recentTableView').classList.add('d-none');
+        }
+
+        function showRecentTableView() {
+            document.getElementById('recentTableView').classList.remove('d-none');
+            document.getElementById('recentGridView').classList.add('d-none');
+        }
+
+        function viewTemplate(id) {
+            window.location.href = `/template/${id}/view`
+        }
+
+        function editTemplate(id) {
+            window.location.href = `/template/${id}/edit`
+        }
+
+        function fillTemplate(id) {
+            window.location.href = `/form/${id}/fill`
+        }
+
+        function deleteTemplate(templateId) {
+            $.ajax({
+                url: `/Template?templateId=${templateId}`,
+                type: "DELETE",
+                success: () => {
+                    window.location.reload();
+                },
+                error: () => {
+                    toastr.warning("There was an error while deleting this template, please try again later!");
+                }
+            });
+
+        }
+    </script>
 </div>

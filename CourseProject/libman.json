@@ -19,6 +19,21 @@
       "provider": "jsdelivr",
       "library": "@bitheral/easymde@2.19.1",
       "destination": "wwwroot/lib/bitheral/easymde/"
+    },
+    {
+      "provider": "jsdelivr",
+      "library": "d3@7.9.0",
+      "destination": "wwwroot/lib/d3/",
+      "files": [
+        "dist/d3.min.js"
+      ]
+    },
+    {
+      "library": "Chart.js@4.4.1",
+      "destination": "wwwroot/lib/Chart.js/",
+      "files": [
+        "chart.min.js"
+      ]
     }
   ]
 }

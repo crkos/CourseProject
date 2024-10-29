@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "mssql1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('resourceGroupName')]/providers/Microsoft.Web/sites/CourseProject20241024232535/providers/Microsoft.ServiceLinker/linkers/ConnectionStringsSQL_NEW_5DFBA0CDDE",
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/courseproject-newdbserver/databases/CourseProject_db_new",
+      "type": "mssql.azure",
+      "connectionId": "ConnectionStrings:SQL_NEW"
+    }
+  }
+}

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using CourseProject.CustomAtributes;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CourseProject.Models
 {
@@ -21,6 +22,7 @@ namespace CourseProject.Models
         public virtual Comment Comment { get; set; }
 
         [ForeignKey("LikedBy")]
+        [OwnerId]
         public virtual User User { get; set; }
     }
 }

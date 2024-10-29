@@ -47,6 +47,7 @@ namespace CourseProject.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastLogin = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -211,8 +212,6 @@ namespace CourseProject.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TemplateId = table.Column<int>(type: "int", nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -272,11 +271,17 @@ namespace CourseProject.Migrations
                     QuestionId = table.Column<int>(type: "int", nullable: false),
                     AnswerText = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SubmittedBy = table.Column<int>(type: "int", nullable: false),
-                    SubmittedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    SubmittedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FormId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Answers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Answers_Forms_FormId",
+                        column: x => x.FormId,
+                        principalTable: "Forms",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Answers_Questions_QuestionId",
                         column: x => x.QuestionId,
@@ -374,23 +379,28 @@ namespace CourseProject.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LastLogin", "LastName", "LockoutEnabled", "LockoutEnd", "Name", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { 1, 0, "3775d934-d3f1-415e-a930-14445a1b1ef6", "admin@app.com", false, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "ADMIN", false, null, "Admin", "ADMIN@APP.COM", "ADMIN", "AQAAAAIAAYagAAAAEPZnSUh3qOA7/y+hlHyh8MVZuY3FHKgDKsWWhU40GI9K6ecLaIMv5ZaGX14SxcqrFA==", "6121112016", false, "7RBRNCP4BAJFPO76ZJGICDH4RYVJ24I6", false, "Admin" });
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LastLogin", "LastName", "LockoutEnabled", "LockoutEnd", "Name", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "Status", "TwoFactorEnabled", "UserName" },
+                values: new object[] { 1, 0, "3775d934-d3f1-415e-a930-14445a1b1ef6", "first@app.com", false, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "FIRSTADMIN", false, null, "First", "FIRST@APP.COM", "FIRSTADMIN", "AQAAAAIAAYagAAAAEPZnSUh3qOA7/y+hlHyh8MVZuY3FHKgDKsWWhU40GI9K6ecLaIMv5ZaGX14SxcqrFA==", "6121112016", false, "7RBRNCP4BAJFPO76ZJGICDH4RYVJ24I6", "Active", false, "First" });
 
             migrationBuilder.InsertData(
                 table: "Templates",
                 columns: new[] { "Id", "CreatedBy", "CreatedDate", "Description", "Image", "Name", "Tags", "TopicId" },
-                values: new object[] { 1, 1, new DateTime(2024, 10, 24, 13, 52, 16, 19, DateTimeKind.Local).AddTicks(4251), "Default template", null, "Default", null, 1 });
+                values: new object[] { 1, 1, new DateTime(2024, 10, 29, 1, 53, 58, 913, DateTimeKind.Local).AddTicks(9673), "Default template", null, "Default", null, 1 });
 
             migrationBuilder.InsertData(
                 table: "Comments",
                 columns: new[] { "Id", "AnswerId", "CommentText", "CommentedBy", "CreatedDate", "FormId", "TemplateId" },
-                values: new object[] { 1, null, "Hello, this is a sample comment!", 1, new DateTime(2024, 10, 24, 13, 52, 16, 19, DateTimeKind.Local).AddTicks(4298), null, 1 });
+                values: new object[] { 1, null, "Hello, this is a sample comment!", 1, new DateTime(2024, 10, 29, 1, 53, 58, 913, DateTimeKind.Local).AddTicks(9718), null, 1 });
 
             migrationBuilder.InsertData(
                 table: "Questions",
                 columns: new[] { "Id", "FormId", "IsVisible", "Order", "QuestionText", "QuestionType", "TemplateId" },
                 values: new object[] { 1, null, true, 1, "Question", "TEXT", 1 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Answers_FormId",
+                table: "Answers",
+                column: "FormId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Answers_QuestionId",

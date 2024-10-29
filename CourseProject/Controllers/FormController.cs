@@ -29,8 +29,7 @@ namespace CourseProject.Controllers
         public async Task<IActionResult> Fill(int id)
         {
             var template = _dbContext.Templates
-                .Include(t => t.Questions)
-                .OrderByDescending(t => t.Questions.Max(q => q.Order))
+                .Include(t => t.Questions.OrderBy(q => q.Order))
                 .FirstOrDefault(t => t.Id == id);
 
             if (template == null)

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CourseProject.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20241025015130_AddFullTextIndex")]
-    partial class AddFullTextIndex
+    [Migration("20241029085359_FirstMigration")]
+    partial class FirstMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,6 +37,9 @@ namespace CourseProject.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("FormId")
+                        .HasColumnType("int");
+
                     b.Property<int>("QuestionId")
                         .HasColumnType("int");
 
@@ -47,6 +50,8 @@ namespace CourseProject.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FormId");
 
                     b.HasIndex("QuestionId");
 
@@ -100,7 +105,7 @@ namespace CourseProject.Migrations
                             Id = 1,
                             CommentText = "Hello, this is a sample comment!",
                             CommentedBy = 1,
-                            CreatedDate = new DateTime(2024, 10, 24, 18, 51, 29, 559, DateTimeKind.Local).AddTicks(6673),
+                            CreatedDate = new DateTime(2024, 10, 29, 1, 53, 58, 913, DateTimeKind.Local).AddTicks(9718),
                             TemplateId = 1
                         });
                 });
@@ -118,14 +123,6 @@ namespace CourseProject.Migrations
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TemplateId")
                         .HasColumnType("int");
@@ -269,7 +266,7 @@ namespace CourseProject.Migrations
                         {
                             Id = 1,
                             CreatedBy = 1,
-                            CreatedDate = new DateTime(2024, 10, 24, 18, 51, 29, 559, DateTimeKind.Local).AddTicks(6627),
+                            CreatedDate = new DateTime(2024, 10, 29, 1, 53, 58, 913, DateTimeKind.Local).AddTicks(9673),
                             Description = "Default template",
                             Name = "Default",
                             TopicId = 1
@@ -360,6 +357,10 @@ namespace CourseProject.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -389,20 +390,21 @@ namespace CourseProject.Migrations
                             Id = 1,
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "3775d934-d3f1-415e-a930-14445a1b1ef6",
-                            Email = "admin@app.com",
+                            Email = "first@app.com",
                             EmailConfirmed = false,
                             LastLogin = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            LastName = "ADMIN",
+                            LastName = "FIRSTADMIN",
                             LockoutEnabled = false,
-                            Name = "Admin",
-                            NormalizedEmail = "ADMIN@APP.COM",
-                            NormalizedUserName = "ADMIN",
+                            Name = "First",
+                            NormalizedEmail = "FIRST@APP.COM",
+                            NormalizedUserName = "FIRSTADMIN",
                             PasswordHash = "AQAAAAIAAYagAAAAEPZnSUh3qOA7/y+hlHyh8MVZuY3FHKgDKsWWhU40GI9K6ecLaIMv5ZaGX14SxcqrFA==",
                             PhoneNumber = "6121112016",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "7RBRNCP4BAJFPO76ZJGICDH4RYVJ24I6",
+                            Status = "Active",
                             TwoFactorEnabled = false,
-                            UserName = "Admin"
+                            UserName = "First"
                         });
                 });
 
@@ -541,6 +543,10 @@ namespace CourseProject.Migrations
 
             modelBuilder.Entity("CourseProject.Models.Answer", b =>
                 {
+                    b.HasOne("CourseProject.Models.Form", null)
+                        .WithMany("Answers")
+                        .HasForeignKey("FormId");
+
                     b.HasOne("CourseProject.Models.Question", "Question")
                         .WithMany("Answers")
                         .HasForeignKey("QuestionId")
@@ -727,6 +733,8 @@ namespace CourseProject.Migrations
 
             modelBuilder.Entity("CourseProject.Models.Form", b =>
                 {
+                    b.Navigation("Answers");
+
                     b.Navigation("Comments");
 
                     b.Navigation("Questions");
